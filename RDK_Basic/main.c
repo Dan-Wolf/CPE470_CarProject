@@ -33,6 +33,7 @@
 #include "MtrCtrl.h"
 #include "spi.h"
 #include "util.h"
+#include "PID.h"
 
 /* ------------------------------------------------------------ */
 /*				Local Type Definitions							*/
@@ -134,6 +135,11 @@ uint16_t IC3_data_index = 0;
 uint32_t IC2_counter = 0;
 uint32_t IC3_counter = 0;
 
+volatile float IC2_avg = 0.0;
+volatile float IC3_avg = 0.0;
+
+volatile float IC2_speed_SP = 0.0;
+
 void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl5) IC2_IntHandler(void) {
     IFS0 &= ~(1 << 9);   // Clears interrupt flag
     
@@ -146,22 +152,31 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl5) IC2_IntHandler(void) {
     while((IC2CON & 0x00000008) == 0x00000008) {
             data = (IC2BUF & 0x0000FFFF);
             
+            int i = 0;
             // Save data to global array
-            for(int i = 0; i < 5; i++) {
-                
+            for(i = 0; i < 5; i++) {
+                IC2_data[i] = IC2_data[i+1];
             }
-            
-            IC2_data[IC2_data_index] = data;
-            
-            // Increment index
-            if (IC2_data_index < 5)
-                IC2_data_index++;
-            else
-                IC2_data_index = 0;
+            IC2_data[5] = data;
             
             IC2_counter++;
     }
     
+    // Average time 
+    int32_t sum = 0;
+    int32_t temp = 0;
+    int i = 0;
+    for(i = 5; i > 0; i--) {
+        temp = IC2_data[i] - IC2_data[i-1];
+        
+        if(temp < 0) {
+            sum = sum + temp + 65000;
+        }
+        else {
+            sum = sum + temp;
+        }
+    }
+    IC2_avg = sum / 5.0;
    
     // Turn LED off
     prtLed2Clr = (1 << bnLed2);
@@ -177,19 +192,33 @@ void __ISR(_INPUT_CAPTURE_3_VECTOR, ipl5) IC3_IntHandler(void) {
     uint16_t data = 0;
     
     while((IC3CON & 0x00000008) == 0x00000008) {
-        data = (IC3BUF & 0x0000FFFF);
+            data = (IC3BUF & 0x0000FFFF);
             
-        // Save data to global array
-        IC3_data[IC3_data_index] = data;
-
-        // Increment index
-        if (IC3_data_index < 5)
-            IC3_data_index++;
-        else
-            IC3_data_index = 0;
-        
-        IC3_counter++;
+            int i = 0;
+            // Save data to global array
+            for(i = 0; i < 5; i++) {
+                IC3_data[i] = IC3_data[i+1];
+            }
+            IC3_data[5] = data;
+            
+            IC3_counter++;
     }
+    
+    // Average time 
+    int32_t sum = 0;
+    int32_t temp = 0;
+    int i = 0;
+    for(i = 5; i > 0; i--) {
+        temp = IC3_data[i] - IC3_data[i-1];
+        
+        if(temp < 0) {
+            sum = sum + temp + 65000;
+        }
+        else {
+            sum = sum + temp;
+        }
+    }
+    IC3_avg = sum / 5.0;
     
     
     // Turn LED off
@@ -222,14 +251,17 @@ void __ISR(_TIMER_5_VECTOR, ipl7) Timer5Handler(void)
 {
     // Turn LED On
     prtLed1Set = (1<<bnLed1);
-    
-    
-     
 	mT5ClearIntFlag();
 	
-    // Average Speed
+    // PID Loop Stuff
+    if (IC2_counter > 160) {
+        float IC2_avg_time = IC2_avg * 0.000001;    // time in seconds
+        float IC2_speed = 0.0045/IC2_avg_time;      // 0.0045ft/pulse
+
+        float error = PID_error(IC2_speed_SP, IC2_speed);
+        PID_update(error);
+	}
     
-	
     button_debounce();
     
     // Turn LED off
@@ -296,6 +328,12 @@ int main(void) {
 	SpiPutBuff("Digilent!", 9);
 	DelayMs(2000);
 	SpiDisable();
+    
+    // Wheel Test
+//        OC2R = 2500;
+//        OC2RS = 2500;
+//        OC3R = 2500;
+//        OC3RS = 2500;
 
 	prtLed1Set	= ( 1 << bnLed1 );
 	INTEnableInterrupts();
@@ -318,23 +356,26 @@ int main(void) {
 		stPmodSwt4 = PmodSwt4.stBtn;
 
 		INTEnableInterrupts();
+        
+        
+        IC2_speed_SP = 1.0;
 		//configure OCR to go forward
         
-        if (IC2_counter <= 1565) {
-            OC2R = 9999;
-            OC2RS = 9999;
-        } else {
-            OC2R = 0;
-            OC2RS = 0;
-        }
-        
-        if (IC3_counter <= 1565) {
-            OC3R = 9999;
-            OC3RS = 9999;
-        } else {
-            OC3R = 0;
-            OC3RS = 0;
-        }
+//        if (IC2_counter <= 1565) {
+//            OC2R = 9999;
+//            OC2RS = 9999;
+//        } else {
+//            OC2R = 0;
+//            OC2RS = 0;
+//        }
+//        
+//        if (IC3_counter <= 1565) {
+//            OC3R = 9999;
+//            OC3RS = 9999;
+//        } else {
+//            OC3R = 0;
+//            OC3RS = 0;
+//        }
         
         /*
         // Wheel Test
@@ -591,6 +632,9 @@ void DeviceInit() {
 	// Configure right motor direction pin and set default direction.
 	trisMtrRightDirClr	= ( 1 << bnMtrRightDir );	
 	prtMtrRightDirSet	= ( 1 << bnMtrRightDir );	// forward
+    
+    // PID Initialization 
+    PID_init(1.0, 0.0, 0.0, -1000.0, 1000.0);
 
 	// Configure Output Compare 2 to drive the left motor.
 	OC2CON	= (1 << 3)|( 1 << 2 ) | ( 1 << 1 );	// pwm set up and timer3
