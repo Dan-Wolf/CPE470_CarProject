@@ -1,0 +1,1 @@
+ $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"."   -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    D:\Spring 2022\CPE 470\RDK-Basic_orig\CPE470_CarProject\RDK_Basic\MtrCtrl.c
