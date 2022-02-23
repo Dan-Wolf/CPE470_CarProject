@@ -254,12 +254,13 @@ void __ISR(_TIMER_5_VECTOR, ipl7) Timer5Handler(void)
 	mT5ClearIntFlag();
 	
     // PID Loop Stuff
-    if (IC2_counter > 160) {
+    if (IC2_counter > 100) {
         float IC2_avg_time = IC2_avg * 0.000001;    // time in seconds
         float IC2_speed = 0.0045/IC2_avg_time;      // 0.0045ft/pulse
 
         float error = PID_error(IC2_speed_SP, IC2_speed);
         PID_update(error);
+        IC2_counter = 0;
 	}
     
     button_debounce();
@@ -330,10 +331,10 @@ int main(void) {
 	SpiDisable();
     
     // Wheel Test
-//        OC2R = 2500;
-//        OC2RS = 2500;
-//        OC3R = 2500;
-//        OC3RS = 2500;
+        OC2R = 2500;
+        OC2RS = 2500;
+        OC3R = 2500;
+        OC3RS = 2500;
 
 	prtLed1Set	= ( 1 << bnLed1 );
 	INTEnableInterrupts();
@@ -634,7 +635,7 @@ void DeviceInit() {
 	prtMtrRightDirSet	= ( 1 << bnMtrRightDir );	// forward
     
     // PID Initialization 
-    PID_init(1.0, 0.0, 0.0, -1000.0, 1000.0);
+    PID_init(250.0, 2500.0, 0.0, -100000.0, 100000.0);
 
 	// Configure Output Compare 2 to drive the left motor.
 	OC2CON	= (1 << 3)|( 1 << 2 ) | ( 1 << 1 );	// pwm set up and timer3
@@ -662,7 +663,7 @@ void DeviceInit() {
 
 	// Configure Timer 5.
 	TMR5	= 0;
-	PR5		= 99; // period match every 100 us
+	PR5		= 499; // period match every 100 us
 	IPC5SET	= ( 1 << 4 ) | ( 1 << 3 ) | ( 1 << 2 ) | ( 1 << 1 ) | ( 1 << 0 ); // interrupt priority level 7, sub 3
 	IFS0CLR = ( 1 << 20);
 	IEC0SET	= ( 1 << 20);

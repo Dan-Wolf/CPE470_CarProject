@@ -56,14 +56,14 @@ void PID_update(float error) {
         OC3R = 9999;
         OC3RS = 9999;
 	}
-	else if (error < 0) {
-		OC2R = 0;
-        OC2RS = 0;
-        OC3R = 0;
-        OC3RS = 0;
+	else if (error < 1000) {
+		OC2R = 1000;
+        OC2RS = 1000;
+        OC3R = 1000;
+        OC3RS = 1000;
 	}
 	else {
-		error = floor(error);           // Makes whole number       
+		//error = floor(error);           // Makes whole number       
         OC2R = (uint32_t)(error);         // Cast as integer
         OC2RS = (uint32_t)(error);
         OC3R = (uint32_t)(error);
