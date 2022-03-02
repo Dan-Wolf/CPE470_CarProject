@@ -34,6 +34,7 @@
 #include "spi.h"
 #include "util.h"
 #include "PID.h"
+#include <math.h>
 
 /* ------------------------------------------------------------ */
 /*				Local Type Definitions							*/
@@ -127,18 +128,25 @@ void	DeviceInit(void);
 void	AppInit(void);
 void	Wait_ms(WORD ms);
 void    button_debounce(void);
+void ADC_init(void);
 
+// PID Globals
 uint16_t IC2_data[6];
 uint16_t IC3_data[6];
 uint16_t IC2_data_index = 0;
 uint16_t IC3_data_index = 0;
 uint32_t IC2_counter = 0;
 uint32_t IC3_counter = 0;
-
 volatile float IC2_avg = 0.0;
 volatile float IC3_avg = 0.0;
-
 volatile float IC2_speed_SP = 0.0;
+volatile float IC3_speed_SP = 0.0;
+
+// ADC Globals
+volatile float ADCValue0 = 0.0;
+volatile float ADCValue1 = 0.0;
+volatile float ADCValue2 = 0.0;
+volatile float distance = 0.0;
 
 void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl5) IC2_IntHandler(void) {
     IFS0 &= ~(1 << 9);   // Clears interrupt flag
@@ -252,15 +260,33 @@ void __ISR(_TIMER_5_VECTOR, ipl7) Timer5Handler(void)
     // Turn LED On
     prtLed1Set = (1<<bnLed1);
 	mT5ClearIntFlag();
+    
+    char buffer[20];
+    uint8_t char_num; 
+    
 	
     // PID Loop Stuff
     if (IC2_counter > 100) {
         float IC2_avg_time = IC2_avg * 0.000001;    // time in seconds
         float IC2_speed = 0.0045/IC2_avg_time;      // 0.0045ft/pulse
 
-        float error = PID_error(IC2_speed_SP, IC2_speed);
-        PID_update(error);
+        float error = PID_error_2(IC2_speed_SP, IC2_speed);
+        PID_update_2(error);
         IC2_counter = 0;
+        
+        char_num = sprintf(buffer, "Speed: %f", IC2_speed);
+        SpiPutBuff(szClearScreen, 3);
+        SpiPutBuff(buffer, char_num);
+	}
+    
+    // PID Loop Stuff
+    if (IC3_counter > 100) {
+        float IC3_avg_time = IC3_avg * 0.000001;    // time in seconds
+        float IC3_speed = 0.0045/IC3_avg_time;      // 0.0045ft/pulse
+
+        float error = PID_error_3(IC3_speed_SP, IC3_speed);
+        PID_update_3(error);
+        IC3_counter = 0;
 	}
     
     button_debounce();
@@ -268,6 +294,26 @@ void __ISR(_TIMER_5_VECTOR, ipl7) Timer5Handler(void)
     // Turn LED off
     prtLed1Clr = (1 << bnLed1);
 }
+
+void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void) 
+{
+
+//   ADC CONVERSION
+//   ISR is written assuming that ADC channels are scanned and the interrupt is thrown after all the conversions are complete
+//
+
+	prtLed3Set = (1 << bnLed3);   		// turn LED3 on in the beginning of interrupt
+	IFS1CLR = ( 1 << 1 );  			// clear interrupt flag for ADC1 Convert Done
+
+//  Read the a/d buffers and convert to voltages
+	ADCValue0 = (float)ADC1BUF0*3.3/1023.0;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
+    distance = 11.984 * pow(ADCValue0,-1.078);
+	ADCValue1 = (float)ADC1BUF1*3.3/1023.0;
+    ADCValue2 = (float)ADC1BUF2*3.3/1023.0;		
+	
+	prtLed3Clr = (1 << bnLed3);   // turn LED3 off at the end of interrupt
+}
+
 
 /* ------------------------------------------------------------ */
 /*				Procedure Definitions							*/
@@ -328,13 +374,13 @@ int main(void) {
 	DelayMs(4);
 	SpiPutBuff("Digilent!", 9);
 	DelayMs(2000);
-	SpiDisable();
+	//SpiDisable();
     
-    // Wheel Test
-        OC2R = 2500;
-        OC2RS = 2500;
-        OC3R = 2500;
-        OC3RS = 2500;
+//    // Wheel Test
+//        OC2R = 2500;
+//        OC2RS = 2500;
+//        OC3R = 2500;
+//        OC3RS = 2500;
 
 	prtLed1Set	= ( 1 << bnLed1 );
 	INTEnableInterrupts();
@@ -359,7 +405,8 @@ int main(void) {
 		INTEnableInterrupts();
         
         
-        IC2_speed_SP = 1.0;
+        IC2_speed_SP = 0.0;
+        IC3_speed_SP = 0.0;
 		//configure OCR to go forward
         
 //        if (IC2_counter <= 1565) {
@@ -635,7 +682,8 @@ void DeviceInit() {
 	prtMtrRightDirSet	= ( 1 << bnMtrRightDir );	// forward
     
     // PID Initialization 
-    PID_init(250.0, 2500.0, 0.0, -100000.0, 100000.0);
+    PID_init_2(250.0, 2500.0, 0.0, -100000.0, 100000.0);
+    PID_init_3(250.0, 2500.0, 0.0, -100000.0, 100000.0);
 
 	// Configure Output Compare 2 to drive the left motor.
 	OC2CON	= (1 << 3)|( 1 << 2 ) | ( 1 << 1 );	// pwm set up and timer3
@@ -704,7 +752,7 @@ void DeviceInit() {
     
     IEC0 |= (1 << 13);   // Enable interrupt 
     
-    
+    ADC_init();
     
 
 	// Enable multi-vector interrupts.
@@ -897,5 +945,29 @@ void button_debounce(void){
 		PmodSwt4.stBtn = PmodSwt4.stCur;
 		PmodSwt4.cst = 0;
 	}
+}
+
+void ADC_init(void) {
+    AD1PCFG	= 0XFFF8;
+	// CONFIGURE AN0, AN1, and AN2 AS ANALOG INPUTS
+	AD1CON1	= 0X00E4;   
+	// BIT 7-5 SSRC 111 = INTERNAL COUNTER ENDS SAMPLING AND STARTS CONVERSION
+	// BIT 4 CLRASM 0 = Normal Operation, buffer contents will be overwritten by the next conversion sequence
+	// BIT 2 ASAM 1 = SAMPLING BEGINS immediately after conversion completes; SAMP bit is automatically set
+	// BIT 1 SAMP 0 = ADC IS NOT SAMPLING
+	// BUT 0 DONE 0 = STATUS BIT
+	AD1CON2	= 0X0408; // 0000 0100 0000 1000     				
+	// BIT 10 CSCNA 1 = SCAN INPUTS
+	// BIT 2-3 SMPL 1-1 = ONE INTERRUPT AFTER EVERY THIRD CONVERSION
+	AD1CON3	= 0X1FFF;
+	// BIT 15 ADRC 0 = CLOCK DERIVED FROM PERIPHERAL BUS CLOCK
+	// SAMC AND ADCS - I NEED TO READ MORE ABOUT TIMING TO UNDERSTAND THE FUNCTION OF THESE TWO VARIABLES
+	AD1CHS	= 0X00000000;   // 32 bit SFR  
+	AD1CSSL	= 0X0007;  
+	// CSSL = SCAN CHANNELS 2,1 and 0
+	IPC6SET	= ( 1 << 27 ) | ( 1 << 26 ); // ADC interrupt priority level 3, sub 0
+	IFS1CLR	= 2;    // CLEAR ADC INTERRUPT FLAG
+	IEC1SET = 2;	// ENABLE ADC INTERRUPT
+	AD1CON1SET = 0X8000;	// 	TURN ADC ON
 }
 /************************************************************************/
