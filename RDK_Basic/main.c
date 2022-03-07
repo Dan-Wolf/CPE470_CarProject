@@ -47,6 +47,10 @@
 #define		TCKPS32 			6
 #define 	TCKPS31				5
 #define 	TCKPS30				4
+
+
+#define     ON_OFF              0
+#define     SPEED_SET           0.8f
 /* ------------------------------------------------------------ */
 /*				Global Variables								*/
 /* ------------------------------------------------------------ */
@@ -261,8 +265,8 @@ void __ISR(_TIMER_5_VECTOR, ipl7) Timer5Handler(void)
     prtLed1Set = (1<<bnLed1);
 	mT5ClearIntFlag();
     
-    char buffer[20];
-    uint8_t char_num; 
+//    char buffer[20];
+//    uint8_t char_num; 
     
 	
     // PID Loop Stuff
@@ -274,9 +278,9 @@ void __ISR(_TIMER_5_VECTOR, ipl7) Timer5Handler(void)
         PID_update_2(error);
         IC2_counter = 0;
         
-        char_num = sprintf(buffer, "Speed: %f", IC2_speed);
-        SpiPutBuff(szClearScreen, 3);
-        SpiPutBuff(buffer, char_num);
+//        char_num = sprintf(buffer, "Speed: %f", IC2_speed);
+//        SpiPutBuff(szClearScreen, 3);
+//        SpiPutBuff(buffer, char_num);
 	}
     
     // PID Loop Stuff
@@ -301,14 +305,22 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
 //   ADC CONVERSION
 //   ISR is written assuming that ADC channels are scanned and the interrupt is thrown after all the conversions are complete
 //
+    
+    char buffer[20];
+    uint8_t char_num; 
 
 	prtLed3Set = (1 << bnLed3);   		// turn LED3 on in the beginning of interrupt
 	IFS1CLR = ( 1 << 1 );  			// clear interrupt flag for ADC1 Convert Done
 
 //  Read the a/d buffers and convert to voltages
-	ADCValue0 = (float)ADC1BUF0*3.3/1023.0;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
-    distance = 11.984 * pow(ADCValue0,-1.078);
-	ADCValue1 = (float)ADC1BUF1*3.3/1023.0;
+	ADCValue0 = (float)ADC1BUF0*3.3f/1023.0f;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
+    ADCValue1 = (float)ADC1BUF1*3.3/1023.0;
+    distance = 21.572 * powf(ADCValue1,-0.983);
+    char_num = sprintf(buffer, "Distance: %f", distance);
+    SpiPutBuff(szClearScreen, 3);
+    SpiPutBuff(buffer, char_num);
+    
+	
     ADCValue2 = (float)ADC1BUF2*3.3/1023.0;		
 	
 	prtLed3Clr = (1 << bnLed3);   // turn LED3 off at the end of interrupt
@@ -376,12 +388,14 @@ int main(void) {
 	DelayMs(2000);
 	//SpiDisable();
     
-//    // Wheel Test
-//        OC2R = 2500;
-//        OC2RS = 2500;
-//        OC3R = 2500;
-//        OC3RS = 2500;
-
+    // Wheel Test
+    if(ON_OFF) {
+        OC2R = 2500;
+        OC2RS = 2500;
+        OC3R = 2500;
+        OC3RS = 2500;
+    }
+    
 	prtLed1Set	= ( 1 << bnLed1 );
 	INTEnableInterrupts();
 	while (fTrue)
@@ -405,8 +419,10 @@ int main(void) {
 		INTEnableInterrupts();
         
         
-        IC2_speed_SP = 0.0;
-        IC3_speed_SP = 0.0;
+        IC2_speed_SP = SPEED_SET;
+        IC3_speed_SP = SPEED_SET;
+        
+        
 		//configure OCR to go forward
         
 //        if (IC2_counter <= 1565) {
