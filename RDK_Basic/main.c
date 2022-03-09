@@ -49,8 +49,13 @@
 #define 	TCKPS30				4
 
 
-#define     ON_OFF              0
-#define     SPEED_SET           0.8f
+#define     ON_OFF              1
+#define     SPEED_SET_L_FORWARD         0.7f
+#define     SPEED_SET_R_FORWARD         0.7f
+#define     SPEED_SET_L_LEFT            0.7f
+#define     SPEED_SET_R_LEFT            1.0f
+#define     SPEED_SET_L_RIGHT           1.0f
+#define     SPEED_SET_R_RIGHT           0.7f
 /* ------------------------------------------------------------ */
 /*				Global Variables								*/
 /* ------------------------------------------------------------ */
@@ -151,6 +156,7 @@ volatile float ADCValue0 = 0.0;
 volatile float ADCValue1 = 0.0;
 volatile float ADCValue2 = 0.0;
 volatile float distance = 0.0;
+uint32_t ADC_Count = 0;
 
 void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl5) IC2_IntHandler(void) {
     IFS0 &= ~(1 << 9);   // Clears interrupt flag
@@ -198,7 +204,7 @@ void __ISR(_INPUT_CAPTURE_3_VECTOR, ipl5) IC3_IntHandler(void) {
     IFS0 &= ~(1 << 13);   // Clears interrupt flag
     
     // Turn LED On
-    prtLed3Set = (1<<bnLed3);
+   // prtLed3Set = (1<<bnLed3);
     
     // Read data until empty
     uint16_t data = 0;
@@ -234,7 +240,7 @@ void __ISR(_INPUT_CAPTURE_3_VECTOR, ipl5) IC3_IntHandler(void) {
     
     
     // Turn LED off
-    prtLed3Clr = (1 << bnLed3);
+   // prtLed3Clr = (1 << bnLed3);
 }
 
 /* ------------------------------------------------------------ */
@@ -315,11 +321,25 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
 //  Read the a/d buffers and convert to voltages
 	ADCValue0 = (float)ADC1BUF0*3.3f/1023.0f;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
     ADCValue1 = (float)ADC1BUF1*3.3/1023.0;
-    distance = 21.572 * powf(ADCValue1,-0.983);
+    distance = 25.409f * powf(ADCValue1,-1.327f);
     char_num = sprintf(buffer, "Distance: %f", distance);
     SpiPutBuff(szClearScreen, 3);
     SpiPutBuff(buffer, char_num);
+    ADC_Count++;
     
+    if (ADC_Count > 5) {
+        if (distance > 60.0f) {
+            IC2_speed_SP = SPEED_SET_L_LEFT;
+            IC3_speed_SP = SPEED_SET_R_LEFT;
+        }else if (distance < 30.0f) {
+            IC2_speed_SP = SPEED_SET_L_RIGHT;
+            IC3_speed_SP = SPEED_SET_R_RIGHT;
+        } else {
+            IC2_speed_SP = SPEED_SET_L_FORWARD;
+            IC3_speed_SP = SPEED_SET_R_FORWARD;
+        }
+        ADC_Count = 0;
+    }
 	
     ADCValue2 = (float)ADC1BUF2*3.3/1023.0;		
 	
@@ -396,6 +416,9 @@ int main(void) {
         OC3RS = 2500;
     }
     
+     IC2_speed_SP = SPEED_SET_L_FORWARD;
+     IC3_speed_SP = SPEED_SET_R_FORWARD;
+    
 	prtLed1Set	= ( 1 << bnLed1 );
 	INTEnableInterrupts();
 	while (fTrue)
@@ -419,8 +442,7 @@ int main(void) {
 		INTEnableInterrupts();
         
         
-        IC2_speed_SP = SPEED_SET;
-        IC3_speed_SP = SPEED_SET;
+       
         
         
 		//configure OCR to go forward
@@ -691,11 +713,11 @@ void DeviceInit() {
 
 	// Configure left motor direction pin and set default direction.
 	trisMtrLeftDirClr	= ( 1 << bnMtrLeftDir );
-	prtMtrLeftDirClr	= ( 1 << bnMtrLeftDir );	// forward
+	prtMtrLeftDirSet	= ( 1 << bnMtrLeftDir );	// forward
 	
 	// Configure right motor direction pin and set default direction.
 	trisMtrRightDirClr	= ( 1 << bnMtrRightDir );	
-	prtMtrRightDirSet	= ( 1 << bnMtrRightDir );	// forward
+	prtMtrRightDirClr	= ( 1 << bnMtrRightDir );	// forward
     
     // PID Initialization 
     PID_init_2(250.0, 2500.0, 0.0, -100000.0, 100000.0);
