@@ -1,4 +1,4 @@
-/************************************************************************/
+ /************************************************************************/
 /*																		*/
 /*	main.c	--	Main program module for project							*/
 /*																		*/
@@ -52,10 +52,10 @@
 #define     ON_OFF              1
 #define     SPEED_SET_L_FORWARD         0.7f
 #define     SPEED_SET_R_FORWARD         0.7f
-#define     SPEED_SET_L_LEFT            0.7f
-#define     SPEED_SET_R_LEFT            1.0f
-#define     SPEED_SET_L_RIGHT           1.0f
-#define     SPEED_SET_R_RIGHT           0.7f
+#define     SPEED_SET_L_LEFT            0.6f
+#define     SPEED_SET_R_LEFT            0.8f
+#define     SPEED_SET_L_RIGHT           0.8f
+#define     SPEED_SET_R_RIGHT           0.6f
 /* ------------------------------------------------------------ */
 /*				Global Variables								*/
 /* ------------------------------------------------------------ */
@@ -319,7 +319,7 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
 	IFS1CLR = ( 1 << 1 );  			// clear interrupt flag for ADC1 Convert Done
 
 //  Read the a/d buffers and convert to voltages
-	ADCValue0 = (float)ADC1BUF0*3.3f/1023.0f;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
+	//ADCValue0 = (float)ADC1BUF0*3.3f/1023.0f;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
     ADCValue1 = (float)ADC1BUF1*3.3/1023.0;
     distance = 25.409f * powf(ADCValue1,-1.327f);
     char_num = sprintf(buffer, "Distance: %f", distance);
@@ -328,10 +328,10 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
     ADC_Count++;
     
     if (ADC_Count > 5) {
-        if (distance > 60.0f) {
+        if (distance > 50.0f) {
             IC2_speed_SP = SPEED_SET_L_LEFT;
             IC3_speed_SP = SPEED_SET_R_LEFT;
-        }else if (distance < 30.0f) {
+        }else if (distance < 40.0f) {
             IC2_speed_SP = SPEED_SET_L_RIGHT;
             IC3_speed_SP = SPEED_SET_R_RIGHT;
         } else {
@@ -341,7 +341,7 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
         ADC_Count = 0;
     }
 	
-    ADCValue2 = (float)ADC1BUF2*3.3/1023.0;		
+    //ADCValue2 = (float)ADC1BUF2*3.3/1023.0;		
 	
 	prtLed3Clr = (1 << bnLed3);   // turn LED3 off at the end of interrupt
 }
