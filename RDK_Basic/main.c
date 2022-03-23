@@ -49,13 +49,14 @@
 #define 	TCKPS30				4
 
 
-#define     ON_OFF              1
+#define     ON_OFF                      1  
+#define     DIST_BUF_SIZE               5
 #define     SPEED_SET_L_FORWARD         0.7f
 #define     SPEED_SET_R_FORWARD         0.7f
-#define     SPEED_SET_L_LEFT            0.6f
-#define     SPEED_SET_R_LEFT            0.8f
-#define     SPEED_SET_L_RIGHT           0.8f
-#define     SPEED_SET_R_RIGHT           0.6f
+#define     SPEED_SET_L_LEFT            0.7f
+#define     SPEED_SET_R_LEFT            0.75f
+#define     SPEED_SET_L_RIGHT           0.75f
+#define     SPEED_SET_R_RIGHT           0.7f
 /* ------------------------------------------------------------ */
 /*				Global Variables								*/
 /* ------------------------------------------------------------ */
@@ -155,7 +156,8 @@ volatile float IC3_speed_SP = 0.0;
 volatile float ADCValue0 = 0.0;
 volatile float ADCValue1 = 0.0;
 volatile float ADCValue2 = 0.0;
-volatile float distance = 0.0;
+volatile float distance_1 = 0.0;
+volatile float distance_2 = 0.0;
 uint32_t ADC_Count = 0;
 
 void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl5) IC2_IntHandler(void) {
@@ -311,9 +313,12 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
 //   ADC CONVERSION
 //   ISR is written assuming that ADC channels are scanned and the interrupt is thrown after all the conversions are complete
 //
+    float distance_1_buf[DIST_BUF_SIZE];
+    float distance_2_buf[DIST_BUF_SIZE];
     
     char buffer[20];
     uint8_t char_num; 
+    float distance_diff = 0.0;
 
 	prtLed3Set = (1 << bnLed3);   		// turn LED3 on in the beginning of interrupt
 	IFS1CLR = ( 1 << 1 );  			// clear interrupt flag for ADC1 Convert Done
@@ -321,27 +326,48 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
 //  Read the a/d buffers and convert to voltages
 	//ADCValue0 = (float)ADC1BUF0*3.3f/1023.0f;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
     ADCValue1 = (float)ADC1BUF1*3.3/1023.0;
-    distance = 25.409f * powf(ADCValue1,-1.327f);
-    char_num = sprintf(buffer, "Distance: %f", distance);
-    SpiPutBuff(szClearScreen, 3);
-    SpiPutBuff(buffer, char_num);
-    ADC_Count++;
+    distance_1_buf[ADC_Count] = 25.409f * powf(ADCValue1,-1.327f) + 2.0;
     
-    if (ADC_Count > 5) {
-        if (distance > 50.0f) {
+    
+    ADCValue2 = (float)ADC1BUF2*3.3/1023.0;
+    distance_2_buf[ADC_Count] = 25.409f * powf(ADCValue2,-1.327f);
+    
+    if (ADC_Count   == (DIST_BUF_SIZE - 1)) {
+        
+        float distance_1_sum = 0.0;
+        float distance_2_sum = 0.0;
+        int i = 0;
+        
+        
+        for (i = 0; i < DIST_BUF_SIZE; i++) {
+            distance_1_sum += distance_1_buf[i];
+            distance_2_sum += distance_2_buf[i];
+        }
+        
+        distance_1 = distance_1_sum / DIST_BUF_SIZE;
+        distance_2 = distance_2_sum / DIST_BUF_SIZE;
+        
+        distance_diff = distance_1 - distance_2;
+        
+        char_num = sprintf(buffer, "%.1f     %.1f", distance_1, distance_2);
+        SpiPutBuff(szClearScreen, 3);
+        SpiPutBuff(buffer, char_num);
+        
+        if (distance_diff > 1.5f)  {
             IC2_speed_SP = SPEED_SET_L_LEFT;
             IC3_speed_SP = SPEED_SET_R_LEFT;
-        }else if (distance < 40.0f) {
+        }else if (distance_diff < -1.5f) {
             IC2_speed_SP = SPEED_SET_L_RIGHT;
             IC3_speed_SP = SPEED_SET_R_RIGHT;
-        } else {
+        }
+        else {
             IC2_speed_SP = SPEED_SET_L_FORWARD;
             IC3_speed_SP = SPEED_SET_R_FORWARD;
         }
         ADC_Count = 0;
     }
 	
-    //ADCValue2 = (float)ADC1BUF2*3.3/1023.0;		
+    ADC_Count++;
 	
 	prtLed3Clr = (1 << bnLed3);   // turn LED3 off at the end of interrupt
 }

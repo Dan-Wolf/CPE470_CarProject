@@ -107,62 +107,62 @@ endif
 # ------------------------------------------------------------------------------------
 # Rules for buildStep: compile
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
-${OBJECTDIR}/_ext/1472/main.o: ../main.c  .generated_files/flags/default/e755b538d861a6cde3e399a2eab03df54bbb0bb5 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/main.o: ../main.c  .generated_files/flags/default/e20457ab4efe6e5b306e8115dda40902628e9a59 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/main.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/main.o.d" -o ${OBJECTDIR}/_ext/1472/main.o ../main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/MtrCtrl.o: ../MtrCtrl.c  .generated_files/flags/default/e4303271afaccd5964482e1e4f4d17d1c33a08d5 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/MtrCtrl.o: ../MtrCtrl.c  .generated_files/flags/default/de087bb9729b9f78d53ee200d30a3482a7292fee .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/MtrCtrl.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/MtrCtrl.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/MtrCtrl.o.d" -o ${OBJECTDIR}/_ext/1472/MtrCtrl.o ../MtrCtrl.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/spi.o: ../spi.c  .generated_files/flags/default/adba73dd677d69eece04edce7ebaef15e38cda42 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/spi.o: ../spi.c  .generated_files/flags/default/336bf9ceb424ab8723125b1e14eec1f943fa47b1 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/spi.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/spi.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/spi.o.d" -o ${OBJECTDIR}/_ext/1472/spi.o ../spi.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/util.o: ../util.c  .generated_files/flags/default/54082cb384577b7c460a5ab391f872ce5b90374e .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/util.o: ../util.c  .generated_files/flags/default/e715897ec41bada77b78bba45d86d9f944468c2d .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/util.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/util.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/util.o.d" -o ${OBJECTDIR}/_ext/1472/util.o ../util.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/PID.o: ../PID.c  .generated_files/flags/default/6ab9193bc42524d077242616167ba41cede86541 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/PID.o: ../PID.c  .generated_files/flags/default/f3ac52ae965b9ed0e914b8643e8d9b6159d2781 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/PID.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/PID.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_PIC32MXSK=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/PID.o.d" -o ${OBJECTDIR}/_ext/1472/PID.o ../PID.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
 else
-${OBJECTDIR}/_ext/1472/main.o: ../main.c  .generated_files/flags/default/d595bf943d773b32f182dc677965041b01b5d291 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/main.o: ../main.c  .generated_files/flags/default/f6478ea1e74277eb66413d9707cb7cb172d6e2b3 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/main.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/main.o.d" -o ${OBJECTDIR}/_ext/1472/main.o ../main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/MtrCtrl.o: ../MtrCtrl.c  .generated_files/flags/default/d10ada72df85f6671c271d60a19eaba5e6c3465d .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/MtrCtrl.o: ../MtrCtrl.c  .generated_files/flags/default/5a0c692206d64602367df50913baa4fc1020f9a .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/MtrCtrl.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/MtrCtrl.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/MtrCtrl.o.d" -o ${OBJECTDIR}/_ext/1472/MtrCtrl.o ../MtrCtrl.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/spi.o: ../spi.c  .generated_files/flags/default/1c9da881018bec6b833aef69e47eeac361c93423 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/spi.o: ../spi.c  .generated_files/flags/default/c3db09e64894405abc2fa6a8dec5588235f5d946 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/spi.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/spi.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/spi.o.d" -o ${OBJECTDIR}/_ext/1472/spi.o ../spi.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/util.o: ../util.c  .generated_files/flags/default/6509d50652f1616d74a483939572e629feb6b959 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/util.o: ../util.c  .generated_files/flags/default/95291c326854189caaa49416646e09335a1c2b2 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/util.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/util.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -I".." -I"." -MP -MMD -MF "${OBJECTDIR}/_ext/1472/util.o.d" -o ${OBJECTDIR}/_ext/1472/util.o ../util.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)    
 	
-${OBJECTDIR}/_ext/1472/PID.o: ../PID.c  .generated_files/flags/default/15a6649393b4af804bc418b8736dbcea4e0c2627 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
+${OBJECTDIR}/_ext/1472/PID.o: ../PID.c  .generated_files/flags/default/6dcd3925223033d6b229b9fc839ab9e3e687bef6 .generated_files/flags/default/f2d2849a63ebd9d9bb029b271492fb5470a4c3d1
 	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
 	@${RM} ${OBJECTDIR}/_ext/1472/PID.o.d 
 	@${RM} ${OBJECTDIR}/_ext/1472/PID.o 
