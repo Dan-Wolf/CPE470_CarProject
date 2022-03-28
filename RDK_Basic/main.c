@@ -326,7 +326,7 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
 //  Read the a/d buffers and convert to voltages
 	//ADCValue0 = (float)ADC1BUF0*3.3f/1023.0f;	// Reading AN0(zero), pin 1 of connector JJ -- servo sensor (center)
     ADCValue1 = (float)ADC1BUF1*3.3/1023.0;
-    distance_1_buf[ADC_Count] = 25.409f * powf(ADCValue1,-1.327f) + 2.0;
+    distance_1_buf[ADC_Count] = 25.409f * powf(ADCValue1,-1.327f) + 7.0;
     
     
     ADCValue2 = (float)ADC1BUF2*3.3/1023.0;
@@ -341,7 +341,7 @@ void __ISR(_ADC_VECTOR, ipl3) _ADC_IntHandler(void)
         
         for (i = 0; i < DIST_BUF_SIZE; i++) {
             distance_1_sum += distance_1_buf[i];
-            distance_2_sum += distance_2_buf[i];
+            distance_2_sum += (distance_2_buf[i]);
         }
         
         distance_1 = distance_1_sum / DIST_BUF_SIZE;
